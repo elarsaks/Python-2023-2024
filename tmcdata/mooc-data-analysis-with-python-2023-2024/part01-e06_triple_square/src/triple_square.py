@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
 
+def triple(n):
+    return n * 3
+
+
+def square(n):
+    return n ** 2
+
+
 def main():
-    def triple(n):
-        return n * 3
-
-    def square(n):
-        return n ** 2
-
     for i in range(1, 11):
-        print(f"triple({i})=={triple(i)} square({i})=={square(i)}")
+        tripled = triple(i)
+        squared = square(i)
 
-        if square(i) > triple(i):
+        if squared > tripled:
             break
+
+        print(f"triple({i})=={tripled} square({i})=={squared}")
 
 
 if __name__ == "__main__":
