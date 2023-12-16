@@ -1,9 +1,9 @@
 import pandas as pd
 
 
-def suicide_fractions(filepath):
+def suicide_fractions():
     # Load the data
-    df = pd.read_csv(filepath)
+    df = pd.read_csv('src/who_suicide_statistics.csv')
 
     # Calculate the fraction of suicides for each row
     df['suicide_fraction'] = df['suicides_no'] / df['population']
@@ -14,7 +14,13 @@ def suicide_fractions(filepath):
     return country_means
 
 
-# Example usage
-filepath = 'src/suicide_data.csv'  # Replace with your actual file path
-result = suicide_fractions(filepath)
-print(result)
+def main():
+    # Example usage
+    result = suicide_fractions()
+    print(result)
+
+    return
+
+
+if __name__ == "__main__":
+    main()
