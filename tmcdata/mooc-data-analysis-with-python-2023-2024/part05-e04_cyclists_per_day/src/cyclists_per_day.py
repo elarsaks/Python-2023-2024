@@ -4,10 +4,15 @@ import matplotlib.pyplot as plt
 
 
 def cyclists_per_day():
+    # File path
     filepath = 'src/Helsingin_pyorailijamaarat.csv'
 
     # Read the data
     df = pd.read_csv(filepath, sep=';')
+
+    # Drop any columns that are completely empty or the 'Unnamed: 21' column
+    df = df.dropna(axis=1, how='all')
+    df = df.drop(columns=['Unnamed: 21'], errors='ignore')
 
     # Finnish month names mapping
     finnish_months = {
