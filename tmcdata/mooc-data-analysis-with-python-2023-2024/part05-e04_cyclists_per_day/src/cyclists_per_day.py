@@ -15,22 +15,28 @@ def cyclists_per_day():
         'heinä': 7, 'elo': 8, 'syys': 9, 'loka': 10, 'marras': 11, 'joulu': 12
     }
 
-    # Parse the 'Päivämäärä' column to datetime
-    df['Päivämäärä'] = df['Päivämäärä'].str.replace(
-        r'(\D+)\s(\d+)\s(\D+)\s(\d+)', lambda m: f"{m.group(2)}-{finnish_months[m.group(3).lower()]}-{m.group(4)}", regex=True)
-    df['Päivämäärä'] = pd.to_datetime(
-        df['Päivämäärä'], format='%d-%m-%Y', errors='coerce')
+    # Extract day, month name, and year from 'Päivämäärä'
+    date_parts = df['Päivämäärä'].str.extract(r'\D+\s(\d+)\s(\D+)\s(\d+)')
+    # Map Finnish month names to numbers
+    date_parts[1] = date_parts[1].map(finnish_months)
 
-    # Drop rows where 'Päivämäärä' is NaN
-    df = df.dropna(subset=['Päivämäärä'])
+    # Ensure all parts are numeric
+    date_parts = date_parts.apply(pd.to_numeric, errors='coerce')
 
-    # Split 'Päivämäärä' into Year, Month, Day and convert to integers
-    df['Year'] = df['Päivämäärä'].dt.year.astype(int)
-    df['Month'] = df['Päivämäärä'].dt.month.astype(int)
-    df['Day'] = df['Päivämäärä'].dt.day.astype(int)
+    # Create a new datetime column
+    df['Date'] = pd.to_datetime(
+        {'year': date_parts[2], 'month': date_parts[1], 'day': date_parts[0]}, errors='coerce')
+
+    # Drop rows where 'Date' is NaT
+    df = df.dropna(subset=['Date'])
+
+    # Split 'Date' into Year, Month, Day
+    df['Year'] = df['Date'].dt.year
+    df['Month'] = df['Date'].dt.month
+    df['Day'] = df['Date'].dt.day
 
     # Drop the original date column and any other unnecessary columns
-    df = df.drop(['Päivämäärä'], axis=1, errors='ignore')
+    df = df.drop(['Päivämäärä', 'Date'], axis=1, errors='ignore')
 
     # Group by Year, Month, Day and sum the counts
     daily_counts = df.groupby(['Year', 'Month', 'Day']).sum()
@@ -43,10 +49,10 @@ def main():
     daily_data = cyclists_per_day()
 
  # Diagnostic print statements
-    print("DataFrame after processing:")
-    print(daily_data.head())
-    print("\nYears in the index:")
-    print(daily_data.index.get_level_values(0).unique())
+    # print("DataFrame after processing:")
+    # print(daily_data.head())
+    # print("\nYears in the index:")
+    # print(daily_data.index.get_level_values(0).unique())
 
     # Check if 2017 is in the index
     if 2017 in daily_data.index.get_level_values(0):
