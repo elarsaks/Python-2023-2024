@@ -1,11 +1,14 @@
 import pandas as pd
 
+import pandas as pd
+
 
 def split_date():
     df = pd.read_csv('src/Helsingin_pyorailijamaarat.csv', sep=';')
+    df = df.head(37128)  # Ensure the dataset has the expected number of rows
 
-    # Ensure the dataset has the expected number of rows
-    df = df.head(37128)
+    # Drop columns that are entirely NaN
+    df = df.dropna(axis=1, how='all')
 
     # Split the 'Päivämäärä' column
     split_data = df['Päivämäärä'].str.split(expand=True)
@@ -35,47 +38,34 @@ def split_date():
     # Drop the 'Time' column
     split_data.drop('Time', axis=1, inplace=True)
 
-    return split_data
+    # Combine with the rest of the cycling data
+    cycling_data = df.drop('Päivämäärä', axis=1)
+    return pd.concat([split_data, cycling_data], axis=1)
 
 
 def read_weather_data():
-    # Read the weather data
     weather_df = pd.read_csv('src/kumpula-weather-2017.csv')
-
-    # Rename columns for consistency
     weather_df.rename(
         columns={'Year': 'Year', 'm': 'Month', 'd': 'Day'}, inplace=True)
-
     return weather_df
 
 
 def cycling_weather():
-    # Process cycling data
     cycling_df = split_date()
-
-    # Read and process weather data
     weather_df = read_weather_data()
 
-    # Ensure column names are consistent for merging
-    # Assuming 'Year', 'Month', and 'Day' are already consistent as per your provided code
+    # Drop unnecessary columns from weather_df
+    weather_df.drop(['Time', 'Time zone'], axis=1, inplace=True)
 
     # Merge datasets on 'Year', 'Month', and 'Day'
     merged_df = pd.merge(cycling_df, weather_df, on=['Year', 'Month', 'Day'])
-
-    # Drop unnecessary columns
-    columns_to_drop = ['m', 'd', 'Time', 'Time zone']
-    for col in columns_to_drop:
-        if col in merged_df.columns:
-            merged_df.drop(col, axis=1, inplace=True)
 
     return merged_df
 
 
 def main():
-    # Use the function to get the merged DataFrame
     result_df = cycling_weather()
-
-    print(result_df)
+    print(result_df.head())
     return
 
 
